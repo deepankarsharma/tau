@@ -49,6 +49,11 @@ void buffer_destroy(Buffer *buf) {
     }
 }
 
+
+void buffer_cleanup(Buffer **buf) {
+    buffer_destroy(*buf);
+}
+
 /* Resize the buffer to a new capacity. Returns 1 on success, 0 on failure. */
 int buffer_resize(Buffer *buf, size_t new_capacity) {
     void *new_data = realloc(buf->data, buf->element_size * new_capacity);

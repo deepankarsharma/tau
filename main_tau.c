@@ -25,7 +25,8 @@ int main(void) {
         NULL
     };
     
-    Buffer *buf = buffer_create(sizeof(Marker), 1024);
+
+    Buffer *buf __attribute__ ((__cleanup__(buffer_cleanup))) = buffer_create(sizeof(Marker), 1024);
     for (const char **p = expressions; *p != NULL; p++) {
         buffer_clear(buf);
         printf("Expression: %s\n", *p);
@@ -37,6 +38,5 @@ int main(void) {
         printf("\n\n");
     }
     
-    buffer_destroy(buf);
     return 0;
 }

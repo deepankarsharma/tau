@@ -51,6 +51,7 @@ typedef struct {
 /* Buffer functions */
 Buffer* buffer_create(size_t element_size, size_t initial_capacity);
 void buffer_destroy(Buffer *buf);
+void buffer_cleanup(Buffer **buf);
 int buffer_push(Buffer *buf, const void *element);
 void* buffer_nth(Buffer *buf, size_t n);
 int buffer_pop(Buffer *buf, void *element_out);
