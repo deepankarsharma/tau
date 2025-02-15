@@ -52,3 +52,6 @@ Mkfile.old
 dkms.conf
 
 out
+fuzz
+main_tau
+main_tau_readfile
