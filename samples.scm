@@ -1,3 +1,8 @@
+(define window-h i8 512)
+(define window-w i8 512)
+(define x i8 (+ 5 10 20))
+
+
 (define factorial 
   (lambda ((x i8)) i8
      (if (<= n 1)
@@ -42,3 +47,29 @@
 (sqr 5)
 (sqr 5.0)
 (sqr (/ 1. 5.))
+
+
+
+(define (test-constant-elimination x y)
+  (let
+      ((tmp1 (+ 4 5)))
+    (let
+        ((tmp2 (+ 10 tmp1)))
+      (+ x y (+ 1 tmp2)))))
+      
+
+
+(define i8 factorial 
+  (lambda ((x i8))
+    (if (<= n 1)
+        1
+        (* n (factorial (- n 1))))))
+
+
+(define factorial 
+  (lambda ((x i8 y i8)  i8)
+    (if (<= n 1)
+        1
+        (* n (factorial (- n 1))))))
+
+

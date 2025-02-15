@@ -59,5 +59,6 @@ void buffer_clear(Buffer *buf);
 
 /* Scheme functions */
 ReturnStatus read_markers(const char* input_string, Buffer* output_buffer);
+ReturnStatus eval_buffer(Buffer *marker_buffer, const char *input);
 const char *marker_type_to_string(MarkerType type);
 void pretty_print_markers(Buffer *marker_buffer, const char *input);

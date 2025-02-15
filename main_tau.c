@@ -5,8 +5,6 @@ int main(void) {
     const char *expressions[] = {
         "(a b c)",
         "(define (my-add x y) (+ x y))",
-        "(+ 1 (+ 2 3) (+ 4 5))",
-        "(+ 1 2)",
         "(printf \"Hello World! \")",
         "(define x \"abcdef\")",
         "(struct point-2d ((x i8) (y i8)))",
@@ -22,6 +20,14 @@ int main(void) {
         "(define x #f)",
         "(define y #t)",
         "(define x nil)",
+        "(* 10 5)",
+        "(+ 1 (+ 2 3) (+ 4 5))",
+        "(+ 1 2)",
+        "(- 20 3)",
+        "20",
+        "42.5",
+        "#f",
+        "#t",
         NULL
     };
     
@@ -35,6 +41,7 @@ int main(void) {
         } else {
             pretty_print_markers(buf, *p);
         }
+        eval_buffer(buf, *p);
         printf("\n\n");
     }
     

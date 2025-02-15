@@ -247,6 +247,174 @@ ReturnStatus read_markers(const char* input_string, Buffer* output_buffer) {
 
 
 /*
+ * Recursive evaluator.
+ *
+ * Parameters:
+ *   index  - pointer to the current position in the marker buffer.
+ *   buf    - the buffer of markers.
+ *   input  - the original input string.
+ *   result - output parameter to hold the computed integer.
+ *
+ * Returns a ReturnStatus indicating success or error.
+ */
+ReturnStatus eval_expr(size_t *index, Buffer *buf, const char *input, int *result) {
+    Marker *m = (Marker *)buffer_nth(buf, *index);
+    if (!m) {
+        fprintf(stderr, "Error: Unexpected end of marker buffer.\n");
+        return RETURN_STATUS_RUNTIME_ERROR;
+    }
+    
+    switch (m->type) {
+        case MARKER_INT: {
+            *result = atoi(input + m->bidx);
+            (*index)++; // Consume integer marker.
+            return RETURN_STATUS_SUCCESS;
+        }
+        case MARKER_FLOAT: {
+            // For simplicity, convert to int by casting.
+            *result = (int)atof(input + m->bidx);
+            (*index)++;
+            return RETURN_STATUS_SUCCESS;
+        }
+        case MARKER_STRING: {
+            fprintf(stderr, "Error: Cannot evaluate a string as a number.\n");
+            return RETURN_STATUS_RUNTIME_ERROR;
+        }
+        case MARKER_TRUE: {
+            *result = 1;
+            (*index)++;
+            return RETURN_STATUS_SUCCESS;
+        }
+        case MARKER_FALSE: {
+            *result = 0;
+            (*index)++;
+            return RETURN_STATUS_SUCCESS;
+        }
+        case MARKER_LPAREN: {
+            // Compound expression: ( operator expr* )
+            (*index)++;  // Consume '('.
+            
+            // Next marker must be an operator (a symbol).
+            Marker *opMarker = (Marker *)buffer_nth(buf, *index);
+            if (!opMarker || opMarker->type != MARKER_SYMBOL) {
+                fprintf(stderr, "Error: Expected operator symbol after '('.\n");
+                return RETURN_STATUS_RUNTIME_ERROR;
+            }
+            int op_len = opMarker->eidx - opMarker->bidx;
+            char op[16];
+            if (op_len >= (int)sizeof(op)) {
+                fprintf(stderr, "Error: Operator too long.\n");
+                return RETURN_STATUS_RUNTIME_ERROR;
+            }
+            strncpy(op, input + opMarker->bidx, op_len);
+            op[op_len] = '\0';
+            (*index)++;  // Consume operator.
+            
+            int acc;
+            ReturnStatus status;
+            if (strcmp(op, "+") == 0) {
+                acc = 0;
+                while (1) {
+                    Marker *curr = (Marker *)buffer_nth(buf, *index);
+                    if (!curr) {
+                        fprintf(stderr, "Error: Unexpected end of expression.\n");
+                        return RETURN_STATUS_RUNTIME_ERROR;
+                    }
+                    if (curr->type == MARKER_RPAREN) {
+                        (*index)++;  // Consume ')'
+                        break;
+                    }
+                    int tmp;
+                    status = eval_expr(index, buf, input, &tmp);
+                    if (status != RETURN_STATUS_SUCCESS)
+                        return status;
+                    acc += tmp;
+                }
+            } else if (strcmp(op, "-") == 0) {
+                int first;
+                status = eval_expr(index, buf, input, &first);
+                if (status != RETURN_STATUS_SUCCESS)
+                    return status;
+                Marker *curr = (Marker *)buffer_nth(buf, *index);
+                if (curr && curr->type == MARKER_RPAREN) {
+                    (*index)++;  // Consume ')'
+                    acc = -first; // Unary minus.
+                } else {
+                    acc = first;
+                    while (1) {
+                        curr = (Marker *)buffer_nth(buf, *index);
+                        if (!curr) {
+                            fprintf(stderr, "Error: Unexpected end of expression.\n");
+                            return RETURN_STATUS_RUNTIME_ERROR;
+                        }
+                        if (curr->type == MARKER_RPAREN) {
+                            (*index)++;  // Consume ')'
+                            break;
+                        }
+                        int tmp;
+                        status = eval_expr(index, buf, input, &tmp);
+                        if (status != RETURN_STATUS_SUCCESS)
+                            return status;
+                        acc -= tmp;
+                    }
+                }
+            } else if (strcmp(op, "*") == 0) {
+                acc = 1;
+                while (1) {
+                    Marker *curr = (Marker *)buffer_nth(buf, *index);
+                    if (!curr) {
+                        fprintf(stderr, "Error: Unexpected end of expression.\n");
+                        return RETURN_STATUS_RUNTIME_ERROR;
+                    }
+                    if (curr->type == MARKER_RPAREN) {
+                        (*index)++;  // Consume ')'
+                        break;
+                    }
+                    int tmp;
+                    status = eval_expr(index, buf, input, &tmp);
+                    if (status != RETURN_STATUS_SUCCESS)
+                        return status;
+                    acc *= tmp;
+                }
+            } else {
+                fprintf(stderr, "Error: Unsupported operator '%s'\n", op);
+                return RETURN_STATUS_RUNTIME_ERROR;
+            }
+            *result = acc;
+            return RETURN_STATUS_SUCCESS;
+        }
+        case MARKER_RPAREN: {
+            fprintf(stderr, "Error: Unexpected ')'\n");
+            (*index)++;
+            return RETURN_STATUS_RUNTIME_ERROR;
+        }
+        default:
+            fprintf(stderr, "Error: Unexpected marker type: %s\n", marker_type_to_string(m->type));
+            (*index)++;
+            return RETURN_STATUS_RUNTIME_ERROR;
+    }
+}
+
+/*
+ * eval_buffer: Evaluate all top-level expressions in the marker buffer.
+ * For each expression found in the buffer, eval_expr is called recursively,
+ * and its result is printed.
+ */
+ReturnStatus eval_buffer(Buffer *marker_buffer, const char *input) {
+    size_t index = 0;
+    while (index < marker_buffer->count) {
+        int result;
+        ReturnStatus status = eval_expr(&index, marker_buffer, input, &result);
+        if (status != RETURN_STATUS_SUCCESS) {
+            fprintf(stderr, "Error evaluating expression starting at marker index %zu\n", index);
+            return status;
+        }
+        printf("Evaluated result: %d\n", result);
+    }
+    return RETURN_STATUS_SUCCESS;
+}
+
+/*
  * Helper function to convert a MarkerType into a readable string.
  */
 const char *marker_type_to_string(MarkerType type) {
