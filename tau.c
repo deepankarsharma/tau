@@ -4,20 +4,24 @@
 #include <stdlib.h>
 #include <string.h>
 
+
 /* 
  * X-Macro for fixed marker tokens.
  * Order matters: longer tokens must come before shorter ones.
  */
-#define MARKER_TOKENS(X)                                \
-    X(MARKER_UNSYNTAX_SPLICING, "#,@", 3)                \
-    X(MARKER_UNQUOTE_SPLICING,  ",@", 2)                 \
-    X(MARKER_SYNTAX,            "#'", 2)                \
-    X(MARKER_QUASI_SYNTAX,      "#`", 2)                \
-    X(MARKER_UNSYNTAX,          "#,", 2)                \
-    X(MARKER_LPAREN,            "(",  1)                \
-    X(MARKER_RPAREN,            ")",  1)                \
-    X(MARKER_QUOTE,             "'",  1)                \
-    X(MARKER_QUASI_QUOTE,       "`",  1)                \
+#define MARKER_TOKENS(X)                                  \
+    X(MARKER_UNSYNTAX_SPLICING, "#,@", 3)                 \
+    X(MARKER_NIL,              "nil", 3)                  \
+    X(MARKER_UNQUOTE_SPLICING, ",@", 2)                   \
+    X(MARKER_SYNTAX,            "#'", 2)                  \
+    X(MARKER_QUASI_SYNTAX,      "#`", 2)                  \
+    X(MARKER_UNSYNTAX,          "#,", 2)                  \
+    X(MARKER_TRUE,              "#t", 2)                  \
+    X(MARKER_FALSE,             "#f", 2)                  \
+    X(MARKER_LPAREN,            "(",  1)                  \
+    X(MARKER_RPAREN,            ")",  1)                  \
+    X(MARKER_QUOTE,             "'",  1)                  \
+    X(MARKER_QUASI_QUOTE,       "`",  1)                  \
     X(MARKER_UNQUOTE,           ",",  1)
 
 

@@ -16,6 +16,12 @@ int main(void) {
         "`(list ,(today-date) ,(tomm-date))",
         "`(a b ,@(get-rest))",
         "(let ([x 50] [y 100]) (+ x y))",
+        "#f",
+        "#t",
+        "nil",
+        "(define x #f)",
+        "(define y #t)",
+        "(define x nil)",
         NULL
     };
     

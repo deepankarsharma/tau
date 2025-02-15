@@ -16,7 +16,10 @@ typedef enum {
   MARKER_SYNTAX,            // #'
   MARKER_QUASI_SYNTAX,      // #`
   MARKER_UNSYNTAX,          // #,
-  MARKER_UNSYNTAX_SPLICING, // #,@  
+  MARKER_UNSYNTAX_SPLICING, // #,@
+  MARKER_TRUE,              // #t
+  MARKER_FALSE,             // #f
+  MARKER_NIL,               // nil
 } MarkerType;
 
 typedef struct {
